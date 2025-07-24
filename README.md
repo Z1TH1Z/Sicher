@@ -1,4 +1,4 @@
-# Firebase Studio
+# Sicher Tech Store
 
 This is a NextJS starter in Firebase Studio.
 
