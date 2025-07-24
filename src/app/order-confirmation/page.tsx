@@ -1,9 +1,20 @@
+
+"use client";
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function OrderConfirmationPage() {
+  const [orderNumber, setOrderNumber] = useState('');
+
+  useEffect(() => {
+    // Generate order number on the client-side to avoid hydration mismatch
+    setOrderNumber(`ST-${Math.floor(Math.random() * 90000) + 10000}`);
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-16 md:py-24">
       <Card className="max-w-2xl mx-auto text-center">
@@ -15,9 +26,11 @@ export default function OrderConfirmationPage() {
           <p className="text-muted-foreground">
             Your order has been placed successfully. A confirmation email has been sent to you.
           </p>
-          <p className="text-lg font-semibold">
-            Order Number: <span className="text-primary">ST-{Math.floor(Math.random() * 90000) + 10000}</span>
-          </p>
+          {orderNumber && (
+            <p className="text-lg font-semibold">
+              Order Number: <span className="text-primary">{orderNumber}</span>
+            </p>
+          )}
           <div className="flex justify-center gap-4 pt-4">
             <Button asChild>
               <Link href="/">Continue Shopping</Link>
