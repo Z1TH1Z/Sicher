@@ -72,10 +72,12 @@ export default function SiteHeader() {
         </div>
         
         <div className="flex items-center gap-2 md:gap-4">
-          <div className="relative hidden sm:block">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="Search products..." className="pl-8 sm:w-[200px] lg:w-[300px]" />
-          </div>
+          {isClient && (
+            <div className="relative hidden sm:block">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input type="search" placeholder="Search products..." className="pl-8 sm:w-[200px] lg:w-[300px]" />
+            </div>
+          )}
           <Button variant="ghost" size="icon" asChild>
             <Link href="/account">
               <User />
@@ -85,7 +87,7 @@ export default function SiteHeader() {
           <Button variant="ghost" size="icon" className="relative" asChild>
             <Link href="/cart">
               <ShoppingCart />
-              {cartCount > 0 && (
+              {isClient && cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
                   {cartCount}
                 </span>
