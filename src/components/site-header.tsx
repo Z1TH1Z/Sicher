@@ -5,7 +5,7 @@ import { ShoppingCart, User, Search, Menu, X, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/hooks/use-cart';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -20,6 +20,12 @@ const navLinks = [
 
 export default function SiteHeader() {
   const { cartCount } = useCart();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   const MobileNav = () => (
     <Sheet>
@@ -55,7 +61,7 @@ export default function SiteHeader() {
             <Shield className="h-6 w-6 text-primary" />
             <span className="text-lg">Sicher Tech</span>
           </Link>
-          <MobileNav />
+          {isClient && <MobileNav />}
           <nav className="hidden md:flex items-center gap-4 text-sm font-medium text-muted-foreground">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} className="transition-colors hover:text-foreground">
