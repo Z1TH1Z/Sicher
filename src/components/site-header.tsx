@@ -15,7 +15,7 @@ import {
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/#featured-products", label: "Products" },
+  { href: "/products", label: "Products" },
   { href: "/track-order", label: "Track Order" },
 ];
 
@@ -47,6 +47,7 @@ function AuthButtons() {
 
 export default function SiteHeader() {
   const { cartCount } = useCart();
+  const { role } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -74,6 +75,11 @@ export default function SiteHeader() {
                 <Link href={link.href}>{link.label}</Link>
               </Button>
             ))}
+            {role === 'admin' && (
+              <Button variant="ghost" asChild className="justify-start">
+                <Link href="/admin" className="text-red-500 font-bold">Admin</Link>
+              </Button>
+            )}
           </nav>
         </div>
       </SheetContent>
@@ -95,6 +101,11 @@ export default function SiteHeader() {
                 {link.label}
               </Link>
             ))}
+            {role === 'admin' && (
+              <Link href="/admin" className="transition-colors hover:text-foreground text-red-500 font-bold">
+                Admin
+              </Link>
+            )}
           </nav>
         </div>
 

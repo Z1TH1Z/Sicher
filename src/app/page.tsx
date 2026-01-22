@@ -21,7 +21,7 @@ export default async function Home() {
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Button asChild size="lg" className="h-12 px-8">
-                <Link href="#products">
+                <Link href="/products">
                   Shop Now
                 </Link>
               </Button>

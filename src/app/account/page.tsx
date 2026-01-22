@@ -8,11 +8,11 @@ import { signOut } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 
 function AccountPage() {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const router = useRouter();
 
     const handleLogout = async () => {
-        await signOut();
+        await logout();
         router.push('/');
     };
 
@@ -54,4 +54,4 @@ function AccountPage() {
     );
 }
 
-export default withAuth(AccountPage, { requiredRole: 'customer' });
+export default withAuth(AccountPage);

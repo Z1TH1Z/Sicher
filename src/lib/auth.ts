@@ -1,4 +1,4 @@
-'use server';
+
 
 import { auth, db } from './firebase';
 import {

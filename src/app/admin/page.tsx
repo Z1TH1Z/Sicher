@@ -4,14 +4,12 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { withAuth } from '@/components/with-auth';
-import { getProducts } from '@/lib/products';
+import { getProducts, deleteProduct } from '@/lib/products';
 import { Product } from '@/lib/types';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { signOut } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import ProductFormDialog from '@/components/admin/product-form-dialog';
-import { db } from '@/lib/firebase';
-import { collection, deleteDoc, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 function AdminDashboard() {
@@ -41,7 +39,7 @@ function AdminDashboard() {
     const handleDelete = async (productId: string) => {
         if (confirm('Are you sure you want to delete this product?')) {
             try {
-                await deleteDoc(doc(db, 'products', productId));
+                await deleteProduct(productId);
                 toast({
                     title: 'Product deleted',
                     description: 'The product has been removed.',

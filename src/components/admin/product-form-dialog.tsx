@@ -14,8 +14,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Product } from '@/lib/types';
-import { db } from '@/lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { addProduct, updateProduct } from '@/lib/products';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProductFormDialogProps {
@@ -77,10 +76,14 @@ export default function ProductFormDialog({
                 price: parseFloat(formData.price),
                 category: formData.category,
                 image: formData.image,
-                specs: {},
+                specs: product ? product.specs : {},
             };
 
-            await setDoc(doc(db, 'products', productId), productData);
+            if (product) {
+                await updateProduct(productData);
+            } else {
+                await addProduct(productData);
+            }
 
             toast({
                 title: product ? 'Product updated' : 'Product added',
@@ -89,6 +92,7 @@ export default function ProductFormDialog({
 
             onSuccess();
         } catch (error) {
+            console.error(error);
             toast({
                 title: 'Error',
                 description: 'Failed to save product.',
