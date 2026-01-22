@@ -5,6 +5,7 @@ import { ShoppingCart, User, Search, Menu, X, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/hooks/use-cart';
+import { useAuth } from '@/contexts/auth-context';
 import React, { useState, useEffect } from 'react';
 import {
   Sheet,
@@ -17,6 +18,32 @@ const navLinks = [
   { href: "/#featured-products", label: "Products" },
   { href: "/track-order", label: "Track Order" },
 ];
+
+function AuthButtons() {
+  const { user, role } = useAuth();
+
+  if (!user) {
+    return (
+      <>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/login">Login</Link>
+        </Button>
+        <Button size="sm" asChild className="hidden sm:inline-flex">
+          <Link href="/signup">Sign Up</Link>
+        </Button>
+      </>
+    );
+  }
+
+  return (
+    <Button variant="ghost" size="icon" asChild>
+      <Link href={role === 'admin' ? '/admin' : '/account'}>
+        <User />
+        <span className="sr-only">{role === 'admin' ? 'Admin' : 'Account'}</span>
+      </Link>
+    </Button>
+  );
+}
 
 export default function SiteHeader() {
   const { cartCount } = useCart();
@@ -44,7 +71,7 @@ export default function SiteHeader() {
           <nav className="flex flex-col gap-2">
             {navLinks.map(link => (
               <Button key={link.href} variant="ghost" asChild className="justify-start">
-                  <Link href={link.href}>{link.label}</Link>
+                <Link href={link.href}>{link.label}</Link>
               </Button>
             ))}
           </nav>
@@ -70,7 +97,7 @@ export default function SiteHeader() {
             ))}
           </nav>
         </div>
-        
+
         <div className="flex items-center gap-2 md:gap-4">
           {isClient && (
             <div className="relative hidden sm:block">
@@ -78,12 +105,9 @@ export default function SiteHeader() {
               <Input type="search" placeholder="Search products..." className="pl-8 sm:w-[200px] lg:w-[300px]" />
             </div>
           )}
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/account">
-              <User />
-              <span className="sr-only">Account</span>
-            </Link>
-          </Button>
+
+          {isClient && <AuthButtons />}
+
           <Button variant="ghost" size="icon" className="relative" asChild>
             <Link href="/cart">
               <ShoppingCart />
