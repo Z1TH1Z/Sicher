@@ -62,12 +62,22 @@ A modern e-commerce platform for premium security products, built with Next.js 1
    GOOGLE_API_KEY=your_google_ai_api_key
    ```
 
-4. **Run the development server**
+4. **Deploy Firestore security rules**
+   ```bash
+   firebase deploy --only firestore:rules
+   ```
+
+5. **Seed the database (optional)**
+   ```bash
+   npm run seed:products
+   ```
+
+6. **Run the development server**
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**
+7. **Open your browser**
    
    Navigate to [http://localhost:9002](http://localhost:9002)
 
@@ -124,11 +134,26 @@ src/
 | `npm run lint` | Run ESLint |
 | `npm run typecheck` | Run TypeScript type checking |
 | `npm run genkit:dev` | Start Genkit AI development server |
+| `npm run seed:products` | Seed database with sample products |
+| `npm run promote:admin` | Promote a user to admin role |
 
 ## 🔒 Firebase Setup
 
 ### Firestore Rules
-Create a `users` collection with the following structure:
+The app uses secure Firestore rules that:
+- Allow public read access to products
+- Restrict product modifications to admins only
+- Prevent users from changing their own role
+- Ensure users can only access their own data
+
+Deploy rules with:
+```bash
+firebase deploy --only firestore:rules
+```
+
+### Database Structure
+
+**users collection:**
 ```javascript
 {
   uid: string,
@@ -138,10 +163,42 @@ Create a `users` collection with the following structure:
 }
 ```
 
+**products collection:**
+```javascript
+{
+  id: string,
+  name: string,
+  description: string,
+  price: number,
+  image: string,
+  category: string,
+  specs: Record<string, string>
+}
+```
+
 ### Creating an Admin User
+
+**Important:** For security reasons, admin access cannot be self-assigned. Follow these steps:
+
+#### Method 1: Using the Promotion Script (Recommended)
+
+1. First, sign up through the app with your email
+2. Run the promotion script:
+   ```bash
+   npm run promote:admin your-email@example.com
+   ```
+3. Log out and log back in to see admin features
+
+#### Method 2: Manual Promotion via Firebase Console
+
 1. Sign up through the app
-2. In Firebase Console, go to Firestore
-3. Find the user document and change `role` from `customer` to `admin`
+2. In Firebase Console, go to Firestore Database
+3. Navigate to the `users` collection
+4. Find your user document (by email)
+5. Edit the document and change `role` from `customer` to `admin`
+6. Log out and log back in
+
+**Security Note:** The hardcoded admin bypass has been removed. All admin access is now properly managed through Firestore.
 
 ## 🎨 Customization
 
@@ -150,6 +207,51 @@ Edit `src/lib/products.ts` to add or modify products.
 
 ### Theming
 The app uses CSS variables for theming. Modify `src/app/globals.css` to customize colors.
+
+## 🚀 Deployment
+
+### Deploying to Vercel
+
+1. Push your code to GitHub
+2. Import the repository in Vercel
+3. Add environment variables in Vercel dashboard
+4. Deploy
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+### Environment Variables for Production
+
+Make sure to set all environment variables in your Vercel project settings:
+- All `NEXT_PUBLIC_FIREBASE_*` variables
+- `GOOGLE_API_KEY` for AI features
+
+## 🔐 Security
+
+This project implements several security measures:
+- Role-based access control (RBAC)
+- Firestore security rules
+- Secure authentication flow
+- Input validation
+- No hardcoded credentials
+
+For detailed security information, see [SECURITY.md](./SECURITY.md)
+
+## 🐛 Troubleshooting
+
+### "No products returned from API"
+- Run `npm run seed:products` to populate the database
+- Check Firestore rules are deployed
+- Verify environment variables are set
+
+### "Failed to fetch user role"
+- Ensure user document exists in Firestore
+- Check Firestore rules allow reading user documents
+- Verify Firebase configuration
+
+### Admin access issues
+- Use `npm run promote:admin your-email@example.com`
+- Log out and log back in after promotion
+- Check that role is exactly `admin` in Firestore
 
 ## 📄 License
 

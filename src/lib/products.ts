@@ -176,10 +176,31 @@ export const products: Product[] = [
 ];
 
 export async function getProducts(): Promise<Product[]> {
+  // If running on client, use the API route to bypass potential network blocks
+  if (typeof window !== 'undefined') {
+    try {
+      console.log('[getProducts] Client-side detected, fetching from /api/products');
+      const response = await fetch('/api/products');
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      const data = await response.json();
+      if (!data || data.length === 0) {
+        console.warn("[getProducts] No products returned from API, using static data");
+        return products;
+      }
+      return data;
+    } catch (error) {
+      console.warn("[getProducts] Error fetching from API, returning static data:", error);
+      return products;
+    }
+  }
+
+  // If running on server, fetch directly from Firestore
   try {
     const querySnapshot = await getDocs(collection(db, "products"));
     if (querySnapshot.empty) {
-      console.warn("No products found in Firestore, returning static data.");
+      console.warn("[getProducts] No products found in Firestore (server), returning static data.");
       return products;
     }
     return querySnapshot.docs.map(doc => {
@@ -197,7 +218,7 @@ export async function getProducts(): Promise<Product[]> {
       } as Product;
     });
   } catch (error) {
-    console.warn("Error fetching from Firestore (likely missing credentials), returning static data:", error);
+    console.warn("Error fetching from Firestore (server), returning static data:", error);
     return products;
   }
 }
@@ -219,14 +240,89 @@ export async function getProductById(id: string): Promise<Product | undefined> {
 }
 
 export async function addProduct(product: Product): Promise<void> {
+  // Use API route on client
+  if (typeof window !== 'undefined') {
+    const { auth } = await import('./firebase');
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User must be logged in to add products');
+    }
+    const token = await user.getIdToken();
+
+    const response = await fetch('/api/products', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(product),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Failed to add product: ${response.status}`);
+    }
+    return;
+  }
+  // Server-side (if used directly, e.g. seeding)
+  const { setDoc, doc } = await import('firebase/firestore');
   await setDoc(doc(db, "products", product.id), product);
 }
 
 export async function updateProduct(product: Product): Promise<void> {
+  // Use API route on client
+  if (typeof window !== 'undefined') {
+    const { auth } = await import('./firebase');
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User must be logged in to update products');
+    }
+    const token = await user.getIdToken();
+
+    const response = await fetch(`/api/products/${product.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(product),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Failed to update product: ${response.status}`);
+    }
+    return;
+  }
+  // Server-side
+  const { updateDoc, doc } = await import('firebase/firestore');
   const { id, ...data } = product;
+  // @ts-ignore
   await updateDoc(doc(db, "products", id), data);
 }
 
 export async function deleteProduct(id: string): Promise<void> {
+  // Use API route on client
+  if (typeof window !== 'undefined') {
+    const { auth } = await import('./firebase');
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User must be logged in to delete products');
+    }
+    const token = await user.getIdToken();
+
+    const response = await fetch(`/api/products/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Failed to delete product: ${response.status}`);
+    }
+    return;
+  }
+  // Server-side
+  const { deleteDoc, doc } = await import('firebase/firestore');
+  // @ts-ignore
   await deleteDoc(doc(db, "products", id));
 }

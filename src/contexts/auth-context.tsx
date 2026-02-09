@@ -26,12 +26,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            console.log('[AuthContext] Auth state changed:', firebaseUser?.email);
             setUser(firebaseUser);
 
             if (firebaseUser) {
+                console.log('[AuthContext] Fetching role for user:', firebaseUser.uid);
                 const userRole = await getUserRole(firebaseUser.uid);
+                console.log('[AuthContext] Role fetched:', userRole);
                 setRole(userRole);
             } else {
+                console.log('[AuthContext] No user, setting role to null');
                 setRole(null);
             }
 

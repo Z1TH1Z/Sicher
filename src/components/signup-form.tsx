@@ -35,8 +35,32 @@ export default function SignupForm() {
 
         try {
             // Use client-side Firebase auth so onAuthStateChanged picks up the signup
+            console.log('Creating user with email:', email);
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            await createUserProfile(userCredential.user.uid, email, 'customer');
+            console.log('User created successfully:', userCredential.user.uid);
+
+            try {
+                console.log('Creating user profile in Firestore...');
+                // Add timeout to prevent infinite hanging
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Firestore write timeout after 10 seconds')), 10000)
+                );
+                const profilePromise = createUserProfile(userCredential.user.uid, email, 'customer');
+                await Promise.race([profilePromise, timeoutPromise]);
+                console.log('User profile created successfully');
+            } catch (firestoreError: any) {
+                console.error('Firestore error (user account created in Auth but profile creation failed):', firestoreError);
+                // User is still created in Auth, just not in Firestore
+                // We can still let them proceed but show a warning
+                toast({
+                    title: 'Account created (partial)',
+                    description: 'Your account was created but there was an issue saving your profile. You can still log in.',
+                    variant: 'default',
+                });
+                router.push('/');
+                setLoading(false);
+                return;
+            }
 
             toast({
                 title: 'Account created',
@@ -44,6 +68,9 @@ export default function SignupForm() {
             });
             router.push('/account');
         } catch (error: any) {
+            console.error('Signup error:', error);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
             toast({
                 title: 'Signup failed',
                 description: error.message || 'Could not create account',

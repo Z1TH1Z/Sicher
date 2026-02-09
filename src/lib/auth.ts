@@ -23,14 +23,23 @@ export interface UserData {
  */
 export async function getUserRole(uid: string): Promise<UserRole | null> {
     try {
+        console.log('[getUserRole] Fetching role for uid:', uid);
         const userDoc = await getDoc(doc(db, 'users', uid));
+        console.log('[getUserRole] Document exists:', userDoc.exists());
         if (userDoc.exists()) {
-            return userDoc.data().role as UserRole;
+            const data = userDoc.data();
+            console.log('[getUserRole] User data:', data);
+            const role = data.role as UserRole;
+            console.log('[getUserRole] Returning role:', role);
+            return role;
         }
-        return null;
+        console.log('[getUserRole] No document found, returning customer as default');
+        // Return customer as default if no role is set
+        return 'customer';
     } catch (error) {
-        console.error('Error fetching user role:', error);
-        return null;
+        console.error('[getUserRole] Error fetching user role:', error);
+        // Return customer as safe default on error
+        return 'customer';
     }
 }
 
@@ -39,14 +48,19 @@ export async function getUserRole(uid: string): Promise<UserRole | null> {
  */
 export async function createUserProfile(uid: string, email: string, role: UserRole = 'customer') {
     try {
-        await setDoc(doc(db, 'users', uid), {
+        console.log('[createUserProfile] Starting profile creation for:', uid);
+        const userDoc = doc(db, 'users', uid);
+        const userData = {
             uid,
             email,
             role,
             createdAt: new Date(),
-        });
+        };
+        console.log('[createUserProfile] Writing data:', userData);
+        await setDoc(userDoc, userData);
+        console.log('[createUserProfile] Profile created successfully');
     } catch (error) {
-        console.error('Error creating user profile:', error);
+        console.error('[createUserProfile] Error creating user profile:', error);
         throw error;
     }
 }

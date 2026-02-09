@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
@@ -47,8 +48,16 @@ export default function CheckoutPage() {
     },
   });
 
-  if (cartItems.length === 0) {
-    router.push('/cart');
+  // Redirect if cart is empty
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    if (cartItems.length === 0) {
+      router.push('/cart');
+    }
+  }, [cartItems, router]);
+
+  if (!mounted || cartItems.length === 0) {
     return null;
   }
 
@@ -88,28 +97,28 @@ export default function CheckoutPage() {
                       <FormMessage />
                     </FormItem>
                   )} />
-                   <FormField control={form.control} name="shippingAddress" render={({ field }) => (
+                  <FormField control={form.control} name="shippingAddress" render={({ field }) => (
                     <FormItem className="md:col-span-2">
                       <FormLabel>Address</FormLabel>
                       <FormControl><Input placeholder="123 Main St" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
-                   <FormField control={form.control} name="shippingCity" render={({ field }) => (
+                  <FormField control={form.control} name="shippingCity" render={({ field }) => (
                     <FormItem>
                       <FormLabel>City</FormLabel>
                       <FormControl><Input placeholder="Anytown" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
-                   <FormField control={form.control} name="shippingState" render={({ field }) => (
+                  <FormField control={form.control} name="shippingState" render={({ field }) => (
                     <FormItem>
                       <FormLabel>State</FormLabel>
                       <FormControl><Input placeholder="CA" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
-                   <FormField control={form.control} name="shippingZip" render={({ field }) => (
+                  <FormField control={form.control} name="shippingZip" render={({ field }) => (
                     <FormItem>
                       <FormLabel>ZIP Code</FormLabel>
                       <FormControl><Input placeholder="12345" {...field} /></FormControl>
@@ -119,39 +128,39 @@ export default function CheckoutPage() {
                 </CardContent>
               </Card>
 
-               <Card>
+              <Card>
                 <CardHeader>
                   <CardTitle>Payment Information</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="cardName" render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                        <FormLabel>Name on Card</FormLabel>
-                        <FormControl><Input placeholder="John M Doe" {...field} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="cardNumber" render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                        <FormLabel>Card Number</FormLabel>
-                        <FormControl><Input placeholder="•••• •••• •••• ••••" {...field} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="cardExpiry" render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Expiry Date</FormLabel>
-                        <FormControl><Input placeholder="MM/YY" {...field} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="cardCvc" render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>CVC</FormLabel>
-                        <FormControl><Input placeholder="123" {...field} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )} />
+                  <FormField control={form.control} name="cardName" render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Name on Card</FormLabel>
+                      <FormControl><Input placeholder="John M Doe" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="cardNumber" render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Card Number</FormLabel>
+                      <FormControl><Input placeholder="•••• •••• •••• ••••" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="cardExpiry" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Expiry Date</FormLabel>
+                      <FormControl><Input placeholder="MM/YY" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="cardCvc" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CVC</FormLabel>
+                      <FormControl><Input placeholder="123" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                 </CardContent>
               </Card>
               <Button type="submit" className="w-full" size="lg">Place Order</Button>
@@ -159,24 +168,24 @@ export default function CheckoutPage() {
           </Form>
         </div>
         <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {cartItems.map(item => (
-                    <div key={item.product.id} className="flex justify-between items-center text-sm">
-                        <span>{item.product.name} x {item.quantity}</span>
-                        <span>${(item.product.price * item.quantity).toFixed(2)}</span>
-                    </div>
-                ))}
-                <Separator />
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>${cartTotal.toFixed(2)}</span>
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {cartItems.map(item => (
+                <div key={item.product.id} className="flex justify-between items-center text-sm">
+                  <span>{item.product.name} x {item.quantity}</span>
+                  <span>${(item.product.price * item.quantity).toFixed(2)}</span>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+              <Separator />
+              <div className="flex justify-between font-bold text-lg">
+                <span>Total</span>
+                <span>${cartTotal.toFixed(2)}</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

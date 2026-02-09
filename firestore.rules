@@ -13,17 +13,38 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
 
     // Products: Everyone can read, only admins can write
     match /products/{productId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
     
     // Users: Users can read/write their own data, admins can read all
+    // Users cannot change their own role (security measure)
     match /users/{userId} {
-      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && 
+                      request.resource.data.uid == userId &&
+                      request.resource.data.role == 'customer';
+      allow update: if (isOwner(userId) && 
+                       request.resource.data.role == resource.data.role) || 
+                       isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Orders: Users can read/write their own orders, admins can read all
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && 
+                    (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
   }
 }
